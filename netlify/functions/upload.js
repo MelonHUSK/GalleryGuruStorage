@@ -22,7 +22,7 @@ exports.handler = async (event) => {
         }
 
         // Define the directory to save the uploaded image
-        const uploadsDir = path.join(__dirname, '../../public/uploads');
+        const uploadsDir = path.join(__dirname, '/public/uploads');
 
         // Ensure the uploads directory exists
         if (!fs.existsSync(uploadsDir)) {
