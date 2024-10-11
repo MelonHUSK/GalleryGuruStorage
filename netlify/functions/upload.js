@@ -1,31 +1,44 @@
 const fs = require('fs');
 const path = require('path');
 
-exports.handler = async (event, context) => {
+exports.handler = async (event) => {
+    if (event.httpMethod !== 'POST') {
+        return {
+            statusCode: 405,
+            body: JSON.stringify({ message: 'Method Not Allowed' }),
+        };
+    }
+
     try {
-        // Parse the event body (Assuming it's JSON with base64 string)
-        const body = JSON.parse(event.body);
-        const base64String = body.image;  // The base64-encoded image string
-        const fileName = body.fileName || 'uploaded_image.jpg'; // Get filename or use default
+        // Parse the JSON body of the request
+        const { image, fileName } = JSON.parse(event.body);
 
-        // Decode base64 string into buffer
-        const data = Buffer.from(base64String, 'base64');
+        // Define the directory to save the uploaded image
+        const uploadsDir = path.join(__dirname, '../../public/uploads');
 
-        // Define the file path to save the image locally
-        const filePath = path.join(__dirname, '../../public/uploads', fileName);
+        // Ensure the uploads directory exists
+        if (!fs.existsSync(uploadsDir)) {
+            fs.mkdirSync(uploadsDir, { recursive: true });
+        }
 
-        // Write the buffer to a file
-        fs.writeFileSync(filePath, data);
+        // Create the path for the new file
+        const filePath = path.join(uploadsDir, fileName);
+
+        // Convert base64 string to Buffer
+        const buffer = Buffer.from(image, 'base64');
+
+        // Write the file to the filesystem
+        await fs.promises.writeFile(filePath, buffer);
 
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: 'Image uploaded successfully!' })
+            body: JSON.stringify({ message: 'Upload successful!' }),
         };
-    } catch (err) {
-        console.error('Error uploading image:', err);
+    } catch (error) {
+        console.error('Upload error:', error);
         return {
             statusCode: 500,
-            body: JSON.stringify({ message: 'Failed to upload image' })
+            body: JSON.stringify({ message: 'Upload failed', error: error.message }),
         };
     }
 };

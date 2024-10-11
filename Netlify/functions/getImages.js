@@ -2,19 +2,23 @@ const fs = require('fs');
 const path = require('path');
 
 exports.handler = async (event) => {
-    const dirPath = path.join(__dirname, '../../public/uploads'); // Adjust as needed
     try {
-        const files = await fs.promises.readdir(dirPath);
-        const images = files.filter(file => /\.(jpg|jpeg|png)$/.test(file)); // Filter for image files
+        const { image, fileName } = JSON.parse(event.body);  // Make sure event.body is parsed correctly
+
+        // Assuming you want to save the image as a file
+        const filePath = path.join(__dirname, '../../public/uploads', fileName);
+        const buffer = Buffer.from(image, 'base64'); // Convert base64 string to buffer
+        await fs.promises.writeFile(filePath, buffer); // Save the file
+
         return {
             statusCode: 200,
-            body: JSON.stringify(images),
+            body: JSON.stringify({ message: 'Upload successful!' }),
         };
     } catch (error) {
-        console.error('Error listing images:', error);
+        console.error('Error in upload function:', error);
         return {
             statusCode: 500,
-            body: JSON.stringify({ message: 'Error: Cannot list images' }),
+            body: JSON.stringify({ message: 'Upload failed', error: error.message }),
         };
     }
 };
