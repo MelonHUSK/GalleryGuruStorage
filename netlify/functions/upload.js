@@ -13,7 +13,7 @@ exports.handler = async (event, context) => {
     });
 
     const tempPath = data.files.file[0].path; // Adjust according to the field name used in your form
-    const uploadsDir = path.join(__dirname, '../../public/uploads'); // Ensure this path is correct
+    const uploadsDir = path.join(__dirname, '../public/uploads'); // Ensure this path is correct
 
     // Move file from tempPath to uploads directory
     const targetPath = path.join(uploadsDir, data.files.file[0].originalFilename);
