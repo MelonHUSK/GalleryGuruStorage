@@ -1,36 +1,31 @@
+const fs = require('fs');
+const path = require('path');
+
 exports.handler = async (event, context) => {
     try {
-        if (event.httpMethod === 'POST') {
-            const data = JSON.parse(event.body);
+        // Parse the event body (Assuming it's JSON with base64 string)
+        const body = JSON.parse(event.body);
+        const base64String = body.image;  // The base64-encoded image string
+        const fileName = body.fileName || 'uploaded_image.jpg'; // Get filename or use default
 
-            // Check if the required fields are present
-            if (!data.file || !data.fileName) {
-                return {
-                    statusCode: 400,
-                    body: JSON.stringify({ error: 'File and fileName are required' }),
-                };
-            }
+        // Decode base64 string into buffer
+        const data = Buffer.from(base64String, 'base64');
 
-            // Simulate processing or storing the uploaded data
-            console.log(`Received file: ${data.fileName}`);
-            
-            // Your upload logic goes here
+        // Define the file path to save the image locally
+        const filePath = path.join(__dirname, '../../public/uploads', fileName);
 
-            return {
-                statusCode: 200,
-                body: JSON.stringify({ message: 'File upload received', data }),
-            };
-        }
+        // Write the buffer to a file
+        fs.writeFileSync(filePath, data);
 
         return {
-            statusCode: 405,
-            body: JSON.stringify({ error: 'Method not allowed' }),
+            statusCode: 200,
+            body: JSON.stringify({ message: 'Image uploaded successfully!' })
         };
-    } catch (error) {
-        console.error('Error processing the request:', error);
+    } catch (err) {
+        console.error('Error uploading image:', err);
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: 'Server error' }),
+            body: JSON.stringify({ message: 'Failed to upload image' })
         };
     }
 };
