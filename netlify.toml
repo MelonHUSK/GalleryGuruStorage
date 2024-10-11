@@ -1,0 +1,5 @@
+[build]
+  functions = "Netlify/functions"  # Update this to the path where your functions are located
+
+[dev]
+  port = 8888               # Specify the port for local development
