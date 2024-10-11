@@ -1,39 +1,32 @@
 const fs = require('fs');
 const path = require('path');
 
-// Specify the uploads directory path
-const uploadsDir = path.join(__dirname, '/public/uploads'); // Adjusted path to match your structure
-
 exports.handler = async (event) => {
-    if (event.httpMethod !== 'POST') {
-        return {
-            statusCode: 405,
-            body: JSON.stringify({ message: 'Method Not Allowed' })
-        };
+    const uploadsDir = path.join(__dirname, '../../public/uploads');
+
+    // Ensure uploads directory exists
+    if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
     }
 
     try {
-        const { image, fileName } = JSON.parse(event.body);
-        const filePath = path.join(uploadsDir, fileName);
+        const { image, filename } = JSON.parse(event.body);
 
-        // Create uploads directory if it doesn't exist
-        if (!fs.existsSync(uploadsDir)) {
-            fs.mkdirSync(uploadsDir, { recursive: true });
-        }
-
-        // Save the image file
+        // Decode base64 image and save it
         const buffer = Buffer.from(image, 'base64');
+        const filePath = path.join(uploadsDir, filename);
+
         fs.writeFileSync(filePath, buffer);
 
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: 'Upload successful!' })
+            body: JSON.stringify({ message: 'Image uploaded successfully' }),
         };
     } catch (error) {
         console.error('Upload failed:', error);
         return {
             statusCode: 500,
-            body: JSON.stringify({ message: 'Upload failed', error: error.message })
+            body: JSON.stringify({ message: 'Upload failed', error: error.message }),
         };
     }
 };

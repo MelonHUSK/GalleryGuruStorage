@@ -3,105 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Gallery</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 20px;
-        }
-        h1 {
-            color: #333;
-        }
-        .gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .gallery img {
-            width: 100%;
-            height: auto;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-    </style>
+    <title>Gallery Guru</title>
+    <script src="scripts/inject.js" defer></script>
 </head>
 <body>
-    <h1>Image Gallery</h1>
-
-    <!-- Input to select file -->
-    <input type="file" id="fileInput" />
-
-    <button onclick="uploadImage()">Upload Image</button>
-
-    <!-- Gallery to display images -->
-    <div class="gallery" id="gallery"></div>
+    <h1>Gallery Guru</h1>
+    <input type="file" id="imageInput" accept="image/*">
+    <button id="uploadButton">Upload Image</button>
+    <div id="imageGallery"></div>
 
     <script>
-        const gallery = document.getElementById('gallery');
+        const uploadButton = document.getElementById('uploadButton');
+        const imageInput = document.getElementById('imageInput');
+        const imageGallery = document.getElementById('imageGallery');
 
-        // Fetch existing images to display in the gallery
-        async function fetchImages() {
-            try {
-                const response = await fetch('https://gallerygurustorage.netlify.app/.netlify/functions/getImages', {
-                    method: 'GET', // Use the GET method
-                });
-        
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message);
-                }
-        
-                const images = await response.json();
-                console.log(images);
-            } catch (error) {
-                console.error('Error fetching images:', error);
-                alert('Failed to fetch images: ' + error.message);
+        uploadButton.addEventListener('click', async () => {
+            const file = imageInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = async () => {
+                    const base64Image = reader.result.split(',')[1];
+                    try {
+                        const response = await fetch('/.netlify/functions/upload', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ image: base64Image, filename: file.name }),
+                        });
+
+                        const result = await response.json();
+                        if (response.ok) {
+                            console.log('Upload successful:', result);
+                            fetchImages();  // Refresh image gallery
+                        } else {
+                            console.error('Error uploading image:', result);
+                        }
+                    } catch (error) {
+                        console.error('Error uploading image:', error);
+                    }
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert('Please select an image to upload.');
             }
-        }
-        
-        
-        // Call fetchImages to load the gallery when the page loads
-        fetchImages();
-
-        // Upload image function
-        // Upload image function
-async function uploadImage() {
-    const fileInput = document.getElementById('fileInput');
-    const file = fileInput.files[0];
-
-    if (!file) {
-        alert('Please select an image file first!');
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append('file', file);  // Append the file to the FormData object
-
-    try {
-        const response = await fetch('/.netlify/functions/upload', {
-            method: 'POST',
-            body: formData
         });
 
-        // Check if the response is okay
-        if (!response.ok) {
-            const errorMessage = await response.text(); // Get the error message from the server response
-            throw new Error(`Upload failed: ${errorMessage}`);
-        }
+        const fetchImages = async () => {
+            try {
+                const response = await fetch('/.netlify/functions/getImages');
+                if (!response.ok) throw new Error(`Error fetching images: ${response.statusText}`);
+                
+                const images = await response.json();
+                displayImages(images);
+            } catch (error) {
+                console.error(error);
+            }
+        };
 
-        console.log('Upload successful!');
-        fetchImages();  // Refresh the gallery after upload
-    } catch (error) {
-        console.error('Error uploading image:', error);
-    }
-}
+        const displayImages = (images) => {
+            imageGallery.innerHTML = '';  // Clear previous images
+            images.forEach(image => {
+                const imgElement = document.createElement('img');
+                imgElement.src = image;  // Assuming the server returns the image URL
+                imgElement.alt = 'Gallery Image';
+                imgElement.style.width = '150px';  // Adjust as necessary
+                imgElement.style.margin = '10px';
+                imageGallery.appendChild(imgElement);
+            });
+        };
 
+        // Initial fetch to display images on page load
+        fetchImages();
     </script>
 </body>
 </html>
