@@ -13,6 +13,14 @@ exports.handler = async (event) => {
         // Parse the JSON body of the request
         const { image, fileName } = JSON.parse(event.body);
 
+        // Validate incoming data
+        if (!image || !fileName) {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ message: 'Missing image or filename' }),
+            };
+        }
+
         // Define the directory to save the uploaded image
         const uploadsDir = path.join(__dirname, '../../public/uploads');
 
