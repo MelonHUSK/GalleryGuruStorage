@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gallery Guru</title>
-    <script src="scripts/inject.js" defer></script>
 </head>
 <body>
     <h1>Gallery Guru</h1>
@@ -24,7 +23,7 @@
                 reader.onloadend = async () => {
                     const base64Image = reader.result.split(',')[1];
                     try {
-                        const response = await fetch('/.netlify/functions/upload', {
+                        const response = await fetch('../.netlify/functions/upload', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
