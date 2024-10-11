@@ -1,6 +1,8 @@
 [build]
-  functions = "Netlify/functions"  # Update this to the correct path for your functions
-  publish = "public"                 # Update this to the folder where your static files are located
+  functions = "Netlify/functions"
+  publish = "public"
 
-[dev]
-  port = 8888                        # Specify the port for local development
+[[redirects]]
+  from = "/functions/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
