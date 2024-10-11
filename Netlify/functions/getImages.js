@@ -2,7 +2,8 @@ const fs = require('fs');
 const path = require('path');
 
 exports.handler = async (event) => {
-    if (event.httpMethod !== 'POST') {
+    // Check if the request method is GET
+    if (event.httpMethod !== 'GET') {
         return {
             statusCode: 405,
             body: JSON.stringify({ message: 'Method Not Allowed' }),
@@ -10,36 +11,18 @@ exports.handler = async (event) => {
     }
 
     try {
-        const { image, fileName } = JSON.parse(event.body);
-
-        if (!image || !fileName) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ message: 'Missing image or filename' }),
-            };
-        }
-
-        const uploadsDir = path.join(__dirname, '/public/uploads');
-
-        // Create the uploads directory if it doesn't exist
-        if (!fs.existsSync(uploadsDir)) {
-            fs.mkdirSync(uploadsDir, { recursive: true });
-        }
-
-        const filePath = path.join(uploadsDir, fileName);
-        const buffer = Buffer.from(image, 'base64');
-
-        await fs.promises.writeFile(filePath, buffer);
+        const uploadsDir = path.join(__dirname, '/public/uploads'); // Ensure this path is correct
+        const files = await fs.promises.readdir(uploadsDir);
 
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: 'Upload successful!' }),
+            body: JSON.stringify(files), // Return the list of files
         };
     } catch (error) {
-        console.error('Upload error:', error);
+        console.error('Error reading files:', error);
         return {
             statusCode: 500,
-            body: JSON.stringify({ message: 'Upload failed', error: error.message }),
+            body: JSON.stringify({ message: 'Failed to list images', error: error.message }),
         };
     }
 };

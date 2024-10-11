@@ -49,7 +49,7 @@
         async function fetchImages() {
             try {
                 const response = await fetch('https://gallerygurustorage.netlify.app/.netlify/functions/getImages', {
-                    method: 'GET', // Ensure you are using the GET method here
+                    method: 'GET', // Use the GET method
                 });
         
                 if (!response.ok) {
@@ -64,6 +64,7 @@
                 alert('Failed to fetch images: ' + error.message);
             }
         }
+        
         
         // Call fetchImages to load the gallery when the page loads
         fetchImages();
