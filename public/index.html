@@ -71,34 +71,38 @@
         fetchImages();
 
         // Upload image function
-        async function uploadImage() {
-            const fileInput = document.getElementById('fileInput');
-            const file = fileInput.files[0];
+        // Upload image function
+async function uploadImage() {
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
 
-            if (!file) {
-                alert('Please select an image file first!');
-                return;
-            }
+    if (!file) {
+        alert('Please select an image file first!');
+        return;
+    }
 
-            const formData = new FormData();
-            formData.append('file', file);  // Append the file to the FormData object
+    const formData = new FormData();
+    formData.append('file', file);  // Append the file to the FormData object
 
-            try {
-                const response = await fetch('/.netlify/functions/upload', {
-                    method: 'POST',
-                    body: formData
-                });
+    try {
+        const response = await fetch('/.netlify/functions/upload', {
+            method: 'POST',
+            body: formData
+        });
 
-                if (response.ok) {
-                    console.log('Upload successful!');
-                    fetchImages();  // Refresh the gallery after upload
-                } else {
-                    console.error('Upload failed');
-                }
-            } catch (error) {
-                console.error('Error uploading image:', error);
-            }
+        // Check if the response is okay
+        if (!response.ok) {
+            const errorMessage = await response.text(); // Get the error message from the server response
+            throw new Error(`Upload failed: ${errorMessage}`);
         }
+
+        console.log('Upload successful!');
+        fetchImages();  // Refresh the gallery after upload
+    } catch (error) {
+        console.error('Error uploading image:', error);
+    }
+}
+
     </script>
 </body>
 </html>
